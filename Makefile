@@ -158,8 +158,7 @@ spark-submit,--master,yarn-cluster,\
 --driver-cores,${DRIVER_CORES},\
 --executor-memory,${EXECUTOR_MEMORY},\
 --executor-cores,${EXECUTOR_CORES},\
---conf,spark.dynamicAllocation.enabled=false,\
---conf,spark.executor.instances=${EXECUTOR_COUNT},\
+--conf,spark.dynamicAllocation.enabled=true,\
 --conf,spark.yarn.executor.memoryOverhead=${YARN_OVERHEAD},\
 --conf,spark.yarn.driver.memoryOverhead=${YARN_OVERHEAD},\
 ${S3_URI}/pointcloud-ingest-assembly-0.1.0-SNAPHOST.jar,\
@@ -182,8 +181,7 @@ spark-submit,--master,yarn-cluster,\
 --driver-cores,${DRIVER_CORES},\
 --executor-memory,${EXECUTOR_MEMORY},\
 --executor-cores,${EXECUTOR_CORES},\
---conf,spark.dynamicAllocation.enabled=false,\
---conf,spark.executor.instances=${EXECUTOR_COUNT},\
+--conf,spark.dynamicAllocation.enabled=true,\
 --conf,spark.yarn.executor.memoryOverhead=${YARN_OVERHEAD},\
 --conf,spark.yarn.driver.memoryOverhead=${YARN_OVERHEAD},\
 ${S3_URI}/pointcloud-ingest-assembly-0.1.0-SNAPHOST.jar,\
@@ -195,6 +193,32 @@ ${S3_URI}/pointcloud-ingest-assembly-0.1.0-SNAPHOST.jar,\
 --persist,true,\
 --pyramid,true,\
 --zoomed,true\
+] | cut -f2 | tee last-step-id.txt
+
+ingest-potsdam:
+	aws emr add-steps --output text --cluster-id ${CLUSTER_ID} \
+--steps Type=CUSTOM_JAR,Name="IngestTINPyramid",Jar=command-runner.jar,Args=[\
+spark-submit,--master,yarn-cluster,\
+--class,com.azavea.pointcloud.ingest.IngestTINPyramid,\
+--driver-memory,${DRIVER_MEMORY},\
+--driver-cores,${DRIVER_CORES},\
+--executor-memory,${EXECUTOR_MEMORY},\
+--executor-cores,${EXECUTOR_CORES},\
+--conf,spark.dynamicAllocation.enabled=true,\
+--conf,spark.yarn.executor.memoryOverhead=${YARN_OVERHEAD},\
+--conf,spark.yarn.driver.memoryOverhead=${YARN_OVERHEAD},\
+${S3_URI}/pointcloud-ingest-assembly-0.1.0-SNAPHOST.jar,\
+--inputPath,${S3_POINTCLOUD_PATH}/dsm-laz/,\
+--catalogPath,${S3_CATALOG},\
+--inputCrs,'EPSG:32633',\
+--destCrs,'EPSG:32633',\
+--cellSize,0.05,0.05,\
+--extent,366076.5,5806762.600000001,367876.5,5808562.60000001,\
+--layerName,potsdam,\
+--numPartitions,50000,\
+--persist,true,\
+--pyramid,false,\
+--zoomed,false\
 ] | cut -f2 | tee last-step-id.txt
 
 ingest-tin-to-file:

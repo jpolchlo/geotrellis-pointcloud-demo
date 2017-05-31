@@ -3,9 +3,11 @@ package com.azavea.pointcloud.ingest
 import com.azavea.pointcloud.ingest.conf.IngestConf
 
 import geotrellis.pointcloud.spark.triangulation._
+import geotrellis.proj4.CRS
 import geotrellis.raster.io._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster._
+import geotrellis.raster.resample.Bilinear
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
@@ -14,8 +16,7 @@ import geotrellis.spark.io.kryo.KryoRegistrator
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling._
 import geotrellis.util._
-import geotrellis.proj4.CRS
-import geotrellis.raster.resample.Bilinear
+import geotrellis.vector.{MultiPoint, Point}
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.hadoop.fs.Path
@@ -60,7 +61,7 @@ object IngestTINPyramid extends Ingest {
 
       // println(s":::targetExtent.reproject(targetCrs, LatLng): ${targetExtent.reproject(targetCrs, LatLng)}")
 
-      val layoutScheme = if (opts.pyramid || opts.zoomed) ZoomedLayoutScheme(targetCrs) else FloatingLayoutScheme(512)
+      val layoutScheme = if (opts.pyramid || opts.zoomed) ZoomedLayoutScheme(targetCrs) else FloatingLayoutScheme(600)
 
       val (zoom, layout) = opts.maxZoom match {
         case Some(z) => z -> ZoomedLayoutScheme.layoutForZoom(z, targetExtent)
@@ -72,6 +73,10 @@ object IngestTINPyramid extends Ingest {
       val mapTransform = layout.mapTransform
       val kb = KeyBounds(mapTransform(targetExtent))
       val md = TileLayerMetadata[SpatialKey](DoubleConstantNoDataCellType, layout, targetExtent, targetCrs, kb)
+
+      println(s"Overall extent: $extent")
+      println(s"Layout: $layout")
+      println(s"Extent of SpatialKey(106886,206105): ${mapTransform(SpatialKey(106886,206105))}")
 
       /*val pointsCount = source.flatMap(_._2).map { _.length.toLong } reduce (_ + _)
       println(s":::pointsCount: ${pointsCount}")*/
@@ -113,8 +118,25 @@ object IngestTINPyramid extends Ingest {
         println(s":::perTileDensity: ${k} -> ${v.length}")
       }*/
 
+      // val targetc = 106892
+      // val targetr = 206004
+      // for (c <- targetc-3 to targetc+3) {
+      //   for (r <- targetr-3 to targetr+3) {
+      //     val points = cut.lookup(SpatialKey(c, r))
+      //     assert(points.length == 1)
+      //     val multipoint = MultiPoint(points.head.map{ c => Point(c.x, c.y) })
+      //     val mpString = geotrellis.vector.io.wkt.WKT.write(multipoint)
+      //     val path = s"/tmp/nm${c}_${r}.wkt"
+      //     new java.io.PrintWriter(path) { write(mpString); close }
+      //     geotrellis.spark.io.hadoop.HdfsUtils.copyPath(s"file://${path}", 
+      //                                              s"s3://geotrellis-pointcloud/nm${c}_${r}.wkt", 
+      //                                              new org.apache.hadoop.conf.Configuration)
+      //   }
+      // }
+      // throw new Exception("User stop")
+
       val tiles: RDD[(SpatialKey, Tile)] =
-        TinToDem.allStitch(cut, layout, extent)
+        TinToDem.boundaryStitch(cut, layout, extent)
 
       val layer = ContextRDD(tiles, md)
 

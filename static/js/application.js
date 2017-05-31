@@ -35,7 +35,7 @@ var map = (function() {
   // m.setView([40.01528977696344, -105.3046817899056], 10);
   // m.setView([-21.76297918421384, 147.97245025634766], 10);
   // m.setView([40.593762837821515, -107.91592794762647], 10);
-  m.setView([35.84900423356369, -106.67767882042727], 10);
+  m.setView([35.87191312751186, -106.57297737978814], 10);
   //m.setView([40.64823667120055, -77.96576193997376 ], 10);
 
   selected.addTo(m);
@@ -98,7 +98,7 @@ var weightedOverlay = (function() {
         'tms/png/{layer}/{z}/{x}/{y}?colorRamp={colorRamp}', {
       format: 'image/png',
       transparent: true,
-      layer: "mar10idw",
+      layer: "mar10tin",
       colorRamp: colorRamp,
       attribution: 'Azavea'
     });

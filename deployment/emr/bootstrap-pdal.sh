@@ -10,7 +10,8 @@ aws s3 cp /etc/hadoop/conf/yarn-site.xml s3://geotrellis-test/pdal-test/
 sudo yum -y install git geos-devel libcurl-devel cmake libtiff-devel
 
 # ----- Comment the following lines and uncomment subsequent lines for explicit building of dependencies
-aws s3 cp s3://geotrellis-pointcloud/pointcloud-demo-libraries.tar.bz2 /tmp
+# aws s3 cp s3://geotrellis-pointcloud/pointcloud-demo-libraries.tar.bz2 /tmp
+aws s3 cp s3://otid-data/code/pointcloud-demo-libraries.tar.bz2 /tmp
 sudo tar xjf /tmp/pointcloud-demo-libraries.tar.bz2 --directory=/
 sudo ldconfig -n /usr/local/lib
 

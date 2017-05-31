@@ -100,8 +100,10 @@ object IngestConf {
         nextOption(opts.copy(catalogPath = value), tail)
       case "--layerName" :: value :: tail =>
         nextOption(opts.copy(layerName = value), tail)
-      case "--extent" :: value :: tail =>
-        nextOption(opts.copy(extent = Some(Extent.fromString(value))), tail)
+      case "--extent" :: v1 :: v2 :: v3 :: v4 :: tail =>
+        print(s"In extent: '$v1 $v2 $v3 $v4' => ")
+        println(s"${Extent.fromString(v1 + "," + v2 + "," + v3 + "," + v4)}")
+        nextOption(opts.copy(extent = Some(Extent.fromString(v1 + "," + v2 + "," + v3 + "," + v4))), tail)
       case "--inputCrs" :: value :: tail =>
         nextOption(opts.copy(inputCrs = Some(value)), tail)
       case "--destCrs" :: value :: tail =>
@@ -112,8 +114,10 @@ object IngestConf {
         nextOption(opts.copy(pyramid = value.toBoolean), tail)
       case "--zoomed" :: value :: tail =>
         nextOption(opts.copy(zoomed = value.toBoolean), tail)
-      case "--cellSize" :: value :: tail =>
-        nextOption(opts.copy(cellSize = CellSize.fromString(value)), tail)
+      case "--cellSize" :: v1 :: v2 :: tail =>
+        print(s"In cellSize: $v1 $v2")
+        println(s"${CellSize.fromString(v1 + "," + v2)}")
+        nextOption(opts.copy(cellSize = CellSize.fromString(v1 + "," + v2)), tail)
       case "--numPartitions" :: value :: tail =>
         nextOption(opts.copy(numPartitions = value.toInt), tail)
       case "--minZoom" :: value :: tail =>
